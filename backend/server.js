@@ -1,3 +1,5 @@
+const path = require("node:path");
+
 const express = require("express");
 const banco = require("./banco");
 
@@ -105,12 +107,15 @@ async function exigirLogin(req, res, next) {
     }
 }
 
-app.get("/", (req, res) => {
-    res.json({
-        projeto: "In Four Acts",
-        status: "API em execução"
-    });
-});
+// Serve o site gerado pelo Vite.
+const pastaFrontend = path.join(
+    __dirname,
+    "..",
+    "frontend",
+    "dist"
+);
+
+app.use(express.static(pastaFrontend));
 
 app.get("/api/health", rotaAssincrona(async (req, res) => {
     await banco.query("select 1");
@@ -397,6 +402,10 @@ app.use((erro, req, res, next) => {
     });
 });
 
-app.listen(porta, "127.0.0.1", () => {
-    console.log(`API disponível em http://127.0.0.1:${porta}`);
+const host = process.env.RENDER
+    ? "0.0.0.0"
+    : "127.0.0.1";
+
+app.listen(porta, host, () => {
+    console.log(`Servidor iniciado na porta ${porta}`);
 });
